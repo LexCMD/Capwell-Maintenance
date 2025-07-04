@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capwell Industries - Maintenance Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            color: #3498db;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .form-number {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .status-bar {
+            background: #e8f5e8;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 30px;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        .form-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-icon {
+            background: #3498db;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            border-color: #3498db;
+            background: #f0f8ff;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .signature-section {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            grid-column: 1 / -1;
+        }
+
+        .signature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .signature-box {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 2px dashed #bdc3c7;
+        }
+
+        .signature-line {
+            height: 60px;
+            display: flex;
+            align-items: end;
+            justify-content: center;
+            border-bottom: 2px solid #2c3e50;
+            margin-bottom: 10px;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #ecf0f1;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .full-width-section {
+            grid-column: 1 / -1;
+        }
+
+        .time-calc {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .calc-result {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .machine-suggestions {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            margin-top: 5px;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .suggestion-item:hover {
+            background: #e8f4fd;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .signature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="form-number">Form #549</div>
+            <div class="logo">CI</div>
+            <h1>CAPWELL INDUSTRIES LTD</h1>
+            <p>Corrective Maintenance Management System</p>
+        </div>
+
+        <div class="main-content">
+            <div class="status-bar" id="statusBar">
+                🔄 System Ready - Enter maintenance information below
+            </div>
+
+            <div class="alert alert-success" id="successAlert">
+                Maintenance record saved successfully!
+            </div>
+
+            <div class="alert alert-error" id="errorAlert">
+                Error occurred while saving.
+            </div>
+
+            <form id="maintenanceForm">
+                <div class="form-grid">
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <h3><span class="section-icon">ℹ</span>Basic Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="date">Date</label>
+                                <input type="date" id="date" name="date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="shift">Shift</label>
+                                <select id="shift" name="shift" required>
+                                    <option value="">Select Shift</option>
+                                    <option value="day">Day (7AM-5PM)</option>
+                                    <option value="night">Night (6PM-6AM)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="machineName">Machine Name</label>
+                            <input 
+                                type="text" 
+                                id="machineName" 
+                                name="machineName" 
+                                placeholder="Enter machine name or equipment ID"
+                                autocomplete="off"
+                                required>
+                            <div class="machine-suggestions" id="machineSuggestions"></div>
+                            <small style="color: #666; font-size: 0.9em;">
+                                💡 Type to see suggestions or enter any machine/equipment name
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <label for="problemDescription">Problem Description</label>
+                            <textarea id="problemDescription" name="problemDescription" placeholder="Describe the problem in detail" required></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown Details -->
+                    <div class="form-section">
+                        <h3><span class="section-icon">⚠</span>Breakdown Details</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="breakdownTime">Time Breakdown Occurred</label>
+                                <input type="time" id="breakdownTime" name="breakdownTime" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="operatorName">Operator's Name</label>
+                                <input type="text" id="operatorName" name="operatorName" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="prodSupervisor">Production Supervisor</label>
+                                <input type="text" id="prodSupervisor" name="prodSupervisor" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="technicianAllocated">Technician Allocated</label>
+                                <input type="text" id="technicianAllocated" name="technicianAllocated" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Repair Timeline -->
+                    <div class="form-section">
+                        <h3><span class="section-icon">⏱</span>Repair Timeline</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="repairStartTime">Repair Work Started</label>
+                                <input type="time" id="repairStartTime" name="repairStartTime">
+                            </div>
+                            <div class="form-group">
+                                <label for="repairCompletedTime">Repair Completed</label>
+                                <input type="time" id="repairCompletedTime" name="repairCompletedTime">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="repairCompletedDate">Date Repair Completed</label>
+                                <input type="date" id="repairCompletedDate" name="repairCompletedDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="productionDownTime">Production Down Time (Hours)</label>
+                                <input type="number" id="productionDownTime" name="productionDownTime" step="0.1" placeholder="0.0">
+                            </div>
+                        </div>
+                        <div class="time-calc" id="timeCalculation">
+                            <div class="calc-result">Total Repair Time: <span id="totalRepairTime">0</span> hours</div>
+                        </div>
+                    </div>
+
+                    <!-- Production Impact -->
+                    <div class="form-section">
+                        <h3><span class="section-icon">📊</span>Production Impact</h3>
+                        <div class="form-group">
+                            <label for="prodSupervisorComments">Production Supervisor Comments</label>
+                            <textarea id="prodSupervisorComments" name="prodSupervisorComments" placeholder="Comments on production impact"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="machineHandover">Machine Handover Notes</label>
+                            <textarea id="machineHandover" name="machineHandover" placeholder="Notes for production team handover"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Root Cause Analysis -->
+                    <div class="form-section full-width-section">
+                        <h3><span class="section-icon">🔍</span>Root Cause Analysis</h3>
+                        <div class="form-group">
+                            <label>Nature of Breakdown</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="mechanical" name="mechanical" value="1">
+                                    <label for="mechanical">Mechanical</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="electrical" name="electrical" value="1">
+                                    <label for="electrical">Electrical</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="operational" name="operational" value="1">
+                                    <label for="operational">Operational</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="others" name="others" value="1">
+                                    <label for="others">Others</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="suspectedRootCause">Suspected Root Cause</label>
+                            <textarea id="suspectedRootCause" name="suspectedRootCause" placeholder="Detailed analysis of the suspected root cause"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="correctiveAction">Corrective Action / Repair Work Undertaken</label>
+                            <textarea id="correctiveAction" name="correctiveAction" placeholder="Describe the corrective actions taken"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="otherDefects">Other Defects Found</label>
+                            <textarea id="otherDefects" name="otherDefects" placeholder="Any additional issues discovered during repair"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Digital Signatures -->
+                    <div class="signature-section">
+                        <h3><span class="section-icon">✍</span>Digital Approvals</h3>
+                        <div class="signature-grid">
+                            <div class="signature-box">
+                                <div class="signature-line">Technician Signature</div>
+                                <input type="text" name="technicianSignature" placeholder="Type name to sign">
+                                <small>Date: <span id="techSignDate"></span></small>
+                            </div>
+                            <div class="signature-box">
+                                <div class="signature-line">Production Supervisor</div>
+                                <input type="text" name="prodSupervisorSignature" placeholder="Type name to sign">
+                                <small>Date: <span id="prodSignDate"></span></small>
+                            </div>
+                            <div class="signature-box">
+                                <div class="signature-line">Maintenance Supervisor</div>
+                                <input type="text" name="maintSupervisorSignature" placeholder="Type name to sign">
+                                <small>Date: <span id="maintSignDate"></span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="saveDraft()">Save Draft</button>
+                    <button type="button" class="btn btn-primary" onclick="previewForm()">Preview</button>
+                    <button type="submit" class="btn btn-success">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Embedded Supabase client - no external dependencies needed
+        class SupabaseClient {
+            constructor(url, key) {
+                this.url = url;
+                this.key = key;
+                this.headers = {
+                    'Content-Type': 'application/json',
+                    'apikey': key,
+                    'Authorization': `Bearer ${key}`
+                };
+            }
+
+            from(table) {
+                return new SupabaseTable(this.url, this.headers, table);
+            }
+        }
+
+        class SupabaseTable {
+            constructor(url, headers, table) {
+                this.url = url;
+                this.headers = headers;
+                this.table = table;
+                this.selectFields = '*';
+                this.whereConditions = [];
+                this.limitValue = null;
+                this.orderByField = null;
+                this.isSingle = false;
+            }
+
+            select(fields = '*') {
+                this.selectFields = fields;
+                return this;
+            }
+
+            eq(column, value) {
+                this.whereConditions.push(`${column}=eq.${value}`);
+                return this;
+            }
+
+            limit(count) {
+                this.limitValue = count;
+                return this;
+            }
+
+            order(field, options = {}) {
+                this.orderByField = field;
+                return this;
+            }
+
+            single() {
+                this.isSingle = true;
+                return this;
+            }
+
+            async execute() {
+                let url = `${this.url}/rest/v1/${this.table}`;
+                
+                const params = [];
+                if (this.selectFields !== '*') params.push(`select=${this.selectFields}`);
+                if (this.whereConditions.length > 0) params.push(...this.whereConditions);
+                if (this.limitValue) params.push(`limit=${this.limitValue}`);
+                if (this.orderByField) params.push(`order=${this.orderByField}`);
+                
+                if (params.length > 0) url += '?' + params.join('&');
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: this.headers
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+
+                let data = await response.json();
+                if (this.isSingle && data && data.length > 0) {
+                    data = data[0];
+                }
+                return { data, error: null };
+            }
+
+            async insert(records) {
+                const url = `${this.url}/rest/v1/${this.table}`;
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { ...this.headers, 'Prefer': 'return=representation' },
+                    body: JSON.stringify(records)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return { data, error: null };
+            }
+
+            then(callback) {
+                return this.execute().then(callback);
+            }
+
+            catch(callback) {
+                return this.execute().catch(callback);
+            }
+        }
+
+        // Global variables
+        let supabase = null;
+        let isSupabaseReady = false;
+        let machineNames = [
+            'Flour Mill Unit 1', 'Flour Mill Unit 2', 'Packaging Line 1', 'Packaging Line 2',
+            'Mixer Unit 1', 'Mixer Unit 2', 'Mixer Unit 3', 'Quality Testing Unit',
+            'Rice Processing Unit', 'Wheat Processing Unit', 'Conveyor Belt A',
+            'Conveyor Belt B', 'Storage Silo 1', 'Storage Silo 2', 'Loading Equipment'
+        ];
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', async function() {
+            initializeForm();
+            await initializeSupabase();
+            setupMachineSuggestions();
+        });
+
+        // Initialize form with default values
+        function initializeForm() {
+            const today = new Date();
+            document.getElementById('date').value = today.toISOString().split('T')[0];
+            
+            // Set signature dates
+            const dateStr = today.toLocaleDateString();
+            document.getElementById('techSignDate').textContent = dateStr;
+            document.getElementById('prodSignDate').textContent = dateStr;
+            document.getElementById('maintSignDate').textContent = dateStr;
+            
+            // Add event listeners
+            document.getElementById('repairStartTime').addEventListener('change', calculateRepairTime);
+            document.getElementById('repairCompletedTime').addEventListener('change', calculateRepairTime);
+            document.getElementById('maintenanceForm').addEventListener('submit', handleFormSubmission);
+        }
+
+        // Initialize Supabase connection
+        async function initializeSupabase() {
+            try {
+                const SUPABASE_URL = 'https://utsbaullqxwqqydxvyav.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0c2JhdWxscXh3cXF5ZHh2eWF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NDIwOTYsImV4cCI6MjA2NzExODA5Nn0.X05idaRCsN3_DNoeTdbfsLNHhrZPGamPOqJWpIfvxlA';
+                
+                console.log('🔄 Creating Supabase client...');
+                supabase = new SupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                // Test the connection
+                console.log('🔄 Testing database connection...');
+                const { data, error } = await supabase.from('machines').select('machine_name').limit(1);
+                
+                if (error) throw error;
+                
+                // Load machine names from database for suggestions
+                const { data: machines } = await supabase.from('machines').select('machine_name').eq('status', 'active');
+                if (machines && machines.length > 0) {
+                    machineNames = [...new Set([...machineNames, ...machines.map(m => m.machine_name)])];
+                }
+                
+                isSupabaseReady = true;
+                updateStatusBar('✅ Connected to database - Ready for maintenance tracking', 'success');
+                console.log('✅ Supabase connected successfully!');
+                
+            } catch (error) {
+                console.error('❌ Database connection failed:', error.message);
+                updateStatusBar('📱 Working in offline mode - Records will be saved locally', 'warning');
+                isSupabaseReady = false;
+            }
+        }
+
+        // Setup machine name suggestions
+        function setupMachineSuggestions() {
+            const machineInput = document.getElementById('machineName');
+            const suggestionsDiv = document.getElementById('machineSuggestions');
+
+            machineInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                if (query.length < 2) {
+                    suggestionsDiv.style.display = 'none';
+                    return;
+                }
+
+                const matches = machineNames.filter(name => 
+                    name.toLowerCase().includes(query)
+                ).slice(0, 5);
+
+                if (matches.length > 0) {
+                    suggestionsDiv.innerHTML = matches.map(name => 
+                        `<div class="suggestion-item" onclick="selectMachine('${name}')">${name}</div>`
+                    ).join('');
+                    suggestionsDiv.style.display = 'block';
+                } else {
+                    suggestionsDiv.style.display = 'none';
+                }
+            });
+
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!machineInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                    suggestionsDiv.style.display = 'none';
+                }
+            });
+        }
+
+        function selectMachine(name) {
+            document.getElementById('machineName').value = name;
+            document.getElementById('machineSuggestions').style.display = 'none';
+        }
+
+        // Calculate repair time
+        function calculateRepairTime() {
+            const startTime = document.getElementById('repairStartTime').value;
+            const endTime = document.getElementById('repairCompletedTime').value;
+            
+            if (startTime && endTime) {
+                const start = new Date('2000-01-01 ' + startTime);
+                const end = new Date('2000-01-01 ' + endTime);
+                
+                let diff = (end - start) / (1000 * 60 * 60); // Convert to hours
+                
+                // Handle overnight repairs
+                if (diff < 0) {
+                    diff += 24;
+                }
+                
+                document.getElementById('totalRepairTime').textContent = diff.toFixed(1);
+                document.getElementById('productionDownTime').value = diff.toFixed(1);
+            }
+        }
+
+        // Handle form submission
+        async function handleFormSubmission(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Saving...';
+            submitBtn.disabled = true;
+            
+            try {
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData);
+                
+                // Validate required fields
+                const requiredFields = ['machineName', 'problemDescription', 'operatorName', 'breakdownTime'];
+                const missingFields = requiredFields.filter(field => !data[field]);
+                
+                if (missingFields.length > 0) {
+                    throw new Error('Please fill in all required fields: ' + missingFields.join(', '));
+                }
+
+                if (!isSupabaseReady) {
+                    // Offline mode - save to localStorage
+                    const offlineRecord = {
+                        ...data,
+                        timestamp: new Date().toISOString(),
+                        form_number: 'MR-OFFLINE-' + Date.now(),
+                        total_repair_hours: parseFloat(document.getElementById('totalRepairTime').textContent) || 0
+                    };
+                    
+                    const existingRecords = JSON.parse(localStorage.getItem('offlineMaintenanceRecords') || '[]');
+                    existingRecords.push(offlineRecord);
+                    localStorage.setItem('offlineMaintenanceRecords', JSON.stringify(existingRecords));
+                    
+                    showAlert(`📱 Maintenance report saved offline! ID: ${offlineRecord.form_number}`, 'success');
+                    updateStatusBar(`📱 Record saved offline - Total offline records: ${existingRecords.length}`, 'warning');
+                } else {
+                    // Online mode - save to database
+                    const { data: maintenanceRecord, error: maintenanceError } = await supabase
+                        .from('maintenance_records')
+                        .insert([{
+                            machine_id: null, // Machine name stored as text, not ID
+                            incident_date: data.date,
+                            shift: data.shift,
+                            problem_description: data.problemDescription,
+                            breakdown_time: data.breakdownTime,
+                            operator_name: data.operatorName,
+                            technician_allocated: data.technicianAllocated,
+                            production_supervisor: data.prodSupervisor,
+                            production_supervisor_comments: data.prodSupervisorComments,
+                            machine_handover_notes: data.machineHandover
+                        }])
+                        .select()
+                        .single();
+
+                    if (maintenanceError) throw maintenanceError;
+
+                    const recordId = maintenanceRecord.record_id;
+
+                    // Insert repair timeline if provided
+                    if (data.repairStartTime && data.repairCompletedTime) {
+                        await supabase.from('repair_timeline').insert([{
+                            record_id: recordId,
+                            repair_start_time: data.repairStartTime,
+                            repair_end_time: data.repairCompletedTime,
+                            repair_start_date: data.date,
+                            repair_completion_date: data.repairCompletedDate || data.date,
+                            total_repair_hours: parseFloat(document.getElementById('totalRepairTime').textContent),
+                            production_downtime_hours: parseFloat(data.productionDownTime) || 0
+                        }]);
+                    }
+
+                    // Insert root cause analysis
+                    await supabase.from('root_cause_analysis').insert([{
+                        record_id: recordId,
+                        is_mechanical: !!data.mechanical,
+                        is_electrical: !!data.electrical,
+                        is_operational: !!data.operational,
+                        is_others: !!data.others,
+                        suspected_root_cause: data.suspectedRootCause,
+                        corrective_action_taken: data.correctiveAction,
+                        other_defects_found: data.otherDefects
+                    }]);
+
+                    // Insert digital signatures if provided
+                    if (data.technicianSignature || data.prodSupervisorSignature || data.maintSupervisorSignature) {
+                        await supabase.from('digital_signatures').insert([{
+                            record_id: recordId,
+                            technician_signature: data.technicianSignature || null,
+                            technician_signed_at: data.technicianSignature ? new Date().toISOString() : null,
+                            production_supervisor_signature: data.prodSupervisorSignature || null,
+                            production_supervisor_signed_at: data.prodSupervisorSignature ? new Date().toISOString() : null,
+                            maintenance_supervisor_signature: data.maintSupervisorSignature || null,
+                            maintenance_supervisor_signed_at: data.maintSupervisorSignature ? new Date().toISOString() : null
+                        }]);
+                    }
+
+                    // Success!
+                    showAlert(`✅ Maintenance report saved successfully! Report ID: ${maintenanceRecord.form_number}`, 'success');
+                    updateStatusBar('✅ Record saved to database successfully', 'success');
+                }
+                
+                // Reset form after successful submission
+                setTimeout(() => {
+                    e.target.reset();
+                    document.getElementById('totalRepairTime').textContent = '0';
+                    initializeForm();
+                }, 3000);
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                showAlert('❌ Error saving maintenance report: ' + error.message, 'error');
+                updateStatusBar('❌ Error occurred while saving', 'error');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Utility functions
+        function updateStatusBar(message, type) {
+            const statusBar = document.getElementById('statusBar');
+            statusBar.textContent = message;
+            statusBar.className = 'status-bar';
+            
+            if (type === 'success') {
+                statusBar.style.background = '#d4edda';
+                statusBar.style.color = '#155724';
+                statusBar.style.borderColor = '#c3e6cb';
+            } else if (type === 'error') {
+                statusBar.style.background = '#f8d7da';
+                statusBar.style.color = '#721c24';
+                statusBar.style.borderColor = '#f5c6cb';
+            } else if (type === 'warning') {
+                statusBar.style.background = '#fff3cd';
+                statusBar.style.color = '#856404';
+                statusBar.style.borderColor = '#ffeaa7';
+            }
+        }
+
+        function saveDraft() {
+            const formData = new FormData(document.getElementById('maintenanceForm'));
+            const data = Object.fromEntries(formData);
+            data.total_repair_hours = parseFloat(document.getElementById('totalRepairTime').textContent) || 0;
+            
+            const draftKey = 'maintenanceDraft_' + Date.now();
+            localStorage.setItem(draftKey, JSON.stringify(data));
+            showAlert('💾 Draft saved to browser storage', 'success');
+            
+            // Show available drafts count
+            const allDrafts = Object.keys(localStorage).filter(key => key.startsWith('maintenanceDraft_'));
+            updateStatusBar(`💾 Draft saved - Total drafts: ${allDrafts.length}`, 'success');
+        }
+
+        function previewForm() {
+            const formData = new FormData(document.getElementById('maintenanceForm'));
+            const data = Object.fromEntries(formData);
+            
+            let preview = '═══════════════════════════════════════\n';
+            preview += '    MAINTENANCE REPORT PREVIEW\n';
+            preview += '═══════════════════════════════════════\n\n';
+            preview += `📅 Date: ${data.date}\n`;
+            preview += `⏰ Shift: ${data.shift}\n`;
+            preview += `🏭 Machine: ${data.machineName}\n`;
+            preview += `👤 Operator: ${data.operatorName}\n`;
+            preview += `🔧 Technician: ${data.technicianAllocated}\n`;
+            preview += `⚠️  Breakdown Time: ${data.breakdownTime}\n\n`;
+            preview += `📝 Problem Description:\n${data.problemDescription}\n\n`;
+            
+            if (data.repairStartTime && data.repairCompletedTime) {
+                preview += `⏱️  Repair Duration: ${document.getElementById('totalRepairTime').textContent} hours\n`;
+                preview += `📉 Production Downtime: ${data.productionDownTime || '0'} hours\n\n`;
+            }
+            
+            const breakdownTypes = [];
+            if (data.mechanical) breakdownTypes.push('Mechanical');
+            if (data.electrical) breakdownTypes.push('Electrical');
+            if (data.operational) breakdownTypes.push('Operational');
+            if (data.others) breakdownTypes.push('Others');
+            
+            if (breakdownTypes.length > 0) {
+                preview += `🔍 Breakdown Type: ${breakdownTypes.join(', ')}\n\n`;
+            }
+            
+            if (data.correctiveAction) {
+                preview += `🛠️  Corrective Action:\n${data.correctiveAction}\n\n`;
+            }
+            
+            preview += '═══════════════════════════════════════';
+            
+            alert(preview);
+        }
+
+        function showAlert(message, type) {
+            const alertId = type === 'error' ? 'errorAlert' : 'successAlert';
+            const alert = document.getElementById(alertId);
+            alert.textContent = message;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // Load drafts function (for future enhancement)
+        function loadAvailableDrafts() {
+            const drafts = Object.keys(localStorage)
+                .filter(key => key.startsWith('maintenanceDraft_'))
+                .map(key => ({
+                    key,
+                    data: JSON.parse(localStorage.getItem(key)),
+                    timestamp: key.split('_')[1]
+                }))
+                .sort((a, b) => b.timestamp - a.timestamp);
+            
+            return drafts;
+        }
+
+        // Add machine name to database (helper function for future use)
+        async function addMachineToDatabase(machineName) {
+            if (!isSupabaseReady) return false;
+            
+            try {
+                await supabase.from('machines').insert([{
+                    machine_name: machineName,
+                    machine_type: 'Equipment',
+                    status: 'active',
+                    department: 'Production'
+                }]);
+                
+                // Add to local suggestions
+                if (!machineNames.includes(machineName)) {
+                    machineNames.push(machineName);
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Error adding machine:', error);
+                return false;
+            }
+        }
+
+        // Export offline records (for future sync)
+        function exportOfflineRecords() {
+            const records = JSON.parse(localStorage.getItem('offlineMaintenanceRecords') || '[]');
+            if (records.length === 0) {
+                alert('No offline records found.');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(records, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `maintenance_records_backup_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            showAlert(`📁 Exported ${records.length} offline records`, 'success');
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+S to save draft
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveDraft();
+            }
+            
+            // Ctrl+Enter to submit form
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('maintenanceForm').dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // Auto-save draft every 2 minutes
+        setInterval(() => {
+            const form = document.getElementById('maintenanceForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+            
+            // Only auto-save if form has some content
+            if (data.machineName || data.problemDescription) {
+                localStorage.setItem('autoSaveDraft', JSON.stringify({
+                    ...data,
+                    autoSaved: true,
+                    timestamp: new Date().toISOString()
+                }));
+                console.log('📝 Auto-saved draft');
+            }
+        }, 120000); // 2 minutes
+
+        // Load auto-saved draft on page load
+        window.addEventListener('load', function() {
+            const autoSaved = localStorage.getItem('autoSaveDraft');
+            if (autoSaved) {
+                const data = JSON.parse(autoSaved);
+                const timeDiff = Date.now() - new Date(data.timestamp).getTime();
+                
+                // If auto-save is less than 1 hour old, offer to restore
+                if (timeDiff < 3600000) {
+                    if (confirm('Auto-saved draft found. Would you like to restore it?')) {
+                        const form = document.getElementById('maintenanceForm');
+                        Object.keys(data).forEach(key => {
+                            const element = form.elements[key];
+                            if (element && key !== 'autoSaved' && key !== 'timestamp') {
+                                if (element.type === 'checkbox') {
+                                    element.checked = !!data[key];
+                                } else {
+                                    element.value = data[key];
+                                }
+                            }
+                        });
+                        showAlert('📝 Draft restored successfully', 'success');
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+                
