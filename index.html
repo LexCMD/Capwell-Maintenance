@@ -584,6 +584,8 @@
                 this.limitValue = null;
                 this.orderByField = null;
                 this.isSingle = false;
+                this.isInsert = false;
+                this.insertData = null;
             }
 
             select(fields = '*') {
@@ -611,7 +613,21 @@
                 return this;
             }
 
+            insert(records) {
+                this.isInsert = true;
+                this.insertData = records;
+                return this; // Return this to allow chaining
+            }
+
             async execute() {
+                if (this.isInsert) {
+                    return await this.performInsert();
+                } else {
+                    return await this.performSelect();
+                }
+            }
+
+            async performSelect() {
                 let url = `${this.url}/rest/v1/${this.table}`;
                 
                 const params = [];
@@ -639,13 +655,18 @@
                 return { data, error: null };
             }
 
-            async insert(records) {
-                const url = `${this.url}/rest/v1/${this.table}`;
+            async performInsert() {
+                let url = `${this.url}/rest/v1/${this.table}`;
+                
+                // Add select parameter if specified
+                if (this.selectFields !== '*') {
+                    url += `?select=${this.selectFields}`;
+                }
                 
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { ...this.headers, 'Prefer': 'return=representation' },
-                    body: JSON.stringify(records)
+                    body: JSON.stringify(this.insertData)
                 });
 
                 if (!response.ok) {
@@ -653,7 +674,10 @@
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
 
-                const data = await response.json();
+                let data = await response.json();
+                if (this.isSingle && data && data.length > 0) {
+                    data = data[0];
+                }
                 return { data, error: null };
             }
 
@@ -1128,4 +1152,3 @@
     </script>
 </body>
 </html>
-                
