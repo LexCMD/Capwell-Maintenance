@@ -36,17 +36,22 @@
         }
 
         .logo {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             background: white;
             border-radius: 50%;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 15px;
-            color: #3498db;
-            font-weight: bold;
-            font-size: 1.2em;
+            overflow: hidden;
+            border: 3px solid rgba(255,255,255,0.2);
+        }
+
+        .logo img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
         }
 
         .header h1 {
@@ -356,8 +361,10 @@
     <div class="container">
         <div class="header">
             <div class="form-number">Form #549</div>
-            <div class="logo">CI</div>
-            <h1>CAPWELL INDUSTRIES LTD</h1>
+            <div class="logo">
+                <img src="https://capwell.co.ke/wp-content/uploads/2020/12/logo-full.png" alt="Capwell Industries Logo">
+            </div>
+            <h1>CAPWELL INDUSTRIES</h1>
             <p>Corrective Maintenance Management System</p>
         </div>
 
@@ -403,7 +410,9 @@
                                 autocomplete="off"
                                 required>
                             <div class="machine-suggestions" id="machineSuggestions"></div>
-                           
+                            <small style="color: #666; font-size: 0.9em;">
+                                💡 Type to see suggestions or enter any machine/equipment name
+                            </small>
                         </div>
                         <div class="form-group">
                             <label for="problemDescription">Problem Description</label>
@@ -783,6 +792,68 @@
             }
         }
 
+        // Function to find or create machine
+        async function findOrCreateMachine(machineName) {
+            try {
+                // First, try to find existing machine by name
+                const { data: existingMachines, error: searchError } = await supabase
+                    .from('machines')
+                    .select('machine_id')
+                    .eq('machine_name', machineName)
+                    .limit(1);
+
+                if (searchError) throw searchError;
+
+                // If machine exists, return its ID
+                if (existingMachines && existingMachines.length > 0) {
+                    return existingMachines[0].machine_id;
+                }
+
+                // If machine doesn't exist, create it
+                const { data: newMachine, error: insertError } = await supabase
+                    .from('machines')
+                    .insert([{
+                        machine_name: machineName,
+                        machine_type: 'Equipment',
+                        status: 'active',
+                        department: 'Production'
+                    }])
+                    .select('machine_id')
+                    .single();
+
+                if (insertError) throw insertError;
+
+                console.log(`✅ Created new machine: ${machineName} with ID: ${newMachine.machine_id}`);
+                
+                // Add to local suggestions for future use
+                if (!machineNames.includes(machineName)) {
+                    machineNames.push(machineName);
+                }
+
+                return newMachine.machine_id;
+
+            } catch (error) {
+                console.error('Error finding/creating machine:', error);
+                
+                // If we can't create machine, use first available machine ID as fallback
+                try {
+                    const { data: fallbackMachine } = await supabase
+                        .from('machines')
+                        .select('machine_id')
+                        .limit(1);
+                    
+                    if (fallbackMachine && fallbackMachine.length > 0) {
+                        console.log(`⚠️ Using fallback machine ID: ${fallbackMachine[0].machine_id} for ${machineName}`);
+                        return fallbackMachine[0].machine_id;
+                    }
+                } catch (fallbackError) {
+                    console.error('Fallback machine lookup failed:', fallbackError);
+                }
+                
+                throw new Error(`Unable to find or create machine: ${machineName}`);
+            }
+        }
+
         // Handle form submission
         async function handleFormSubmission(e) {
             e.preventDefault();
@@ -821,10 +892,14 @@
                     updateStatusBar(`📱 Record saved offline - Total offline records: ${existingRecords.length}`, 'warning');
                 } else {
                     // Online mode - save to database
+                    console.log('🔄 Finding or creating machine for:', data.machineName);
+                    const machineId = await findOrCreateMachine(data.machineName);
+                    
+                    console.log('🔄 Saving maintenance record...');
                     const { data: maintenanceRecord, error: maintenanceError } = await supabase
                         .from('maintenance_records')
                         .insert([{
-                            machine_id: null, // Machine name stored as text, not ID
+                            machine_id: machineId, // Now we have a valid machine ID
                             incident_date: data.date,
                             shift: data.shift,
                             problem_description: data.problemDescription,
@@ -841,9 +916,11 @@
                     if (maintenanceError) throw maintenanceError;
 
                     const recordId = maintenanceRecord.record_id;
+                    console.log('✅ Maintenance record saved with ID:', recordId);
 
                     // Insert repair timeline if provided
                     if (data.repairStartTime && data.repairCompletedTime) {
+                        console.log('🔄 Saving repair timeline...');
                         await supabase.from('repair_timeline').insert([{
                             record_id: recordId,
                             repair_start_time: data.repairStartTime,
@@ -856,6 +933,7 @@
                     }
 
                     // Insert root cause analysis
+                    console.log('🔄 Saving root cause analysis...');
                     await supabase.from('root_cause_analysis').insert([{
                         record_id: recordId,
                         is_mechanical: !!data.mechanical,
@@ -869,6 +947,7 @@
 
                     // Insert digital signatures if provided
                     if (data.technicianSignature || data.prodSupervisorSignature || data.maintSupervisorSignature) {
+                        console.log('🔄 Saving digital signatures...');
                         await supabase.from('digital_signatures').insert([{
                             record_id: recordId,
                             technician_signature: data.technicianSignature || null,
@@ -883,6 +962,7 @@
                     // Success!
                     showAlert(`✅ Maintenance report saved successfully! Report ID: ${maintenanceRecord.form_number}`, 'success');
                     updateStatusBar('✅ Record saved to database successfully', 'success');
+                    console.log('✅ All data saved successfully!');
                 }
                 
                 // Reset form after successful submission
@@ -985,63 +1065,6 @@
             setTimeout(() => {
                 alert.style.display = 'none';
             }, 5000);
-        }
-
-        // Load drafts function (for future enhancement)
-        function loadAvailableDrafts() {
-            const drafts = Object.keys(localStorage)
-                .filter(key => key.startsWith('maintenanceDraft_'))
-                .map(key => ({
-                    key,
-                    data: JSON.parse(localStorage.getItem(key)),
-                    timestamp: key.split('_')[1]
-                }))
-                .sort((a, b) => b.timestamp - a.timestamp);
-            
-            return drafts;
-        }
-
-        // Add machine name to database (helper function for future use)
-        async function addMachineToDatabase(machineName) {
-            if (!isSupabaseReady) return false;
-            
-            try {
-                await supabase.from('machines').insert([{
-                    machine_name: machineName,
-                    machine_type: 'Equipment',
-                    status: 'active',
-                    department: 'Production'
-                }]);
-                
-                // Add to local suggestions
-                if (!machineNames.includes(machineName)) {
-                    machineNames.push(machineName);
-                }
-                
-                return true;
-            } catch (error) {
-                console.error('Error adding machine:', error);
-                return false;
-            }
-        }
-
-        // Export offline records (for future sync)
-        function exportOfflineRecords() {
-            const records = JSON.parse(localStorage.getItem('offlineMaintenanceRecords') || '[]');
-            if (records.length === 0) {
-                alert('No offline records found.');
-                return;
-            }
-            
-            const dataStr = JSON.stringify(records, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(dataBlob);
-            link.download = `maintenance_records_backup_${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            
-            showAlert(`📁 Exported ${records.length} offline records`, 'success');
         }
 
         // Keyboard shortcuts
