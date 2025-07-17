@@ -386,7 +386,7 @@
     <div class="container">
         <div class="header">
             <a href="index.html" class="back-btn">← Back to Form</a>
-            <button class="refresh-btn" onclick="loadAllAnalytics()">🔄 Refresh Data</button>
+            <button class="refresh-btn" id="refreshBtn">🔄 Refresh Data</button>
             <div class="logo">
                 <img src="logo.png" alt="Capwell Industries Logo">
             </div>
@@ -642,6 +642,7 @@
             await initializeSupabase();
             await loadAllAnalytics();
             setupFilters();
+            document.getElementById('refreshBtn').addEventListener('click', loadAllAnalytics);
         });
 
         async function initializeSupabase() {
