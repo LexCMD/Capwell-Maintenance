@@ -548,52 +548,59 @@
             }
         }
 
-        async function loadAllData() {
-            try {
-                updateStatusBar('🔄 Loading data...', 'loading');
-                
-                // Load maintenance records
-                console.log('Loading maintenance records...');
-                const { data: records, error: recordsError } = await supabase
-                    .from('maintenance_records')
-                    .select('*')
-                    .order('incident_date', { ascending: false })
-                    .limit(20);
-
-                if (recordsError) {
-                    throw recordsError;
-                }
-
-                maintenanceRecords = records || [];
-                console.log('Loaded maintenance records:', maintenanceRecords.length);
-
-                // Load machines
-                console.log('Loading machines...');
-                const { data: machineData, error: machineError } = await supabase
-                    .from('machines')
-                    .select('*')
-                    .limit(50);
-
-                if (machineError) {
-                    console.log('Could not load machines table (this is okay):', machineError.message);
-                    machines = [];
-                } else {
-                    machines = machineData || [];
-                    console.log('Loaded machines:', machines.length);
-                }
-
-                // Update displays
-                updateMetrics();
-                updateRecentRecords();
-                updateMachineTable();
-
-                updateStatusBar('✅ Analytics loaded successfully', 'success');
-
-            } catch (error) {
-                console.error('Error loading data:', error);
-                updateStatusBar('❌ Error loading data: ' + error.message, 'error');
+     async function loadAllData() {
+    try {
+        updateStatusBar('🔄 Loading data...', 'loading');
+        
+        // Load maintenance records using direct fetch
+        console.log('Loading maintenance records...');
+        const response = await fetch('https://utsbaullqxwqqydxvyav.supabase.co/rest/v1/maintenance_records?select=*&order=incident_date.desc&limit=20', {
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0c2JhdWxscXh3cXF5ZHh2eWF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NDIwOTYsImV4cCI6MjA2NzExODA5Nn0.X05idaRCsN3_DNoeTdbfsLNHhrZPGamPOqJWpIfvxlA',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0c2JhdWxscXh3cXF5ZHh2eWF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NDIwOTYsImV4cCI6MjA2NzExODA5Nn0.X05idaRCsN3_DNoeTdbfsLNHhrZPGamPOqJWpIfvxlA'
             }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+
+        const records = await response.json();
+        maintenanceRecords = records || [];
+        console.log('Loaded maintenance records:', maintenanceRecords.length);
+
+        // Load machines (optional, may not exist)
+        try {
+            const machineResponse = await fetch('https://utsbaullqxwqqydxvyav.supabase.co/rest/v1/machines?select=*&limit=50', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0c2JhdWxscXh3cXF5ZHh2eWF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NDIwOTYsImV4cCI6MjA2NzExODA5Nn0.X05idaRCsN3_DNoeTdbfsLNHhrZPGamPOqJWpIfvxlA',
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0c2JhdWxscXh3cXF5ZHh2eWF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NDIwOTYsImV4cCI6MjA2NzExODA5Nn0.X05idaRCsN3_DNoeTdbfsLNHhrZPGamPOqJWpIfvxlA'
+                }
+            });
+            
+            if (machineResponse.ok) {
+                machines = await machineResponse.json();
+                console.log('Loaded machines:', machines.length);
+            }
+        } catch (machineError) {
+            console.log('Could not load machines table:', machineError.message);
+            machines = [];
+        }
+
+        // Update displays
+        updateMetrics();
+        updateRecentRecords();
+        updateMachineTable();
+
+        updateStatusBar('✅ Analytics loaded successfully', 'success');
+
+    } catch (error) {
+        console.error('Error loading data:', error);
+        updateStatusBar('❌ Error loading data: ' + error.message, 'error');
+    }
+}
 
         function updateMetrics() {
             // Total records
@@ -687,28 +694,28 @@
             }
         }
 
-        async function testConnection() {
-            try {
-                updateStatusBar('🔍 Testing connection...', 'loading');
-                
-                const { data, error } = await supabase
-                    .from('maintenance_records')
-                    .select('*')
-                    .limit(1);
-
-                if (error) {
-                    throw error;
-                }
-
-                alert(`✅ Connection successful! Found ${data.length} records in database.`);
-                updateStatusBar('✅ Connection test successful', 'success');
-
-            } catch (error) {
-                console.error('Connection test failed:', error);
-                alert(`❌ Connection failed: ${error.message}`);
-                updateStatusBar('❌ Connection test failed', 'error');
+    async function testConnection() {
+    try {
+        updateStatusBar('🔍 Testing connection...', 'loading');
+        
+        const response = await fetch('https://utsbaullqxwqqydxvyav.supabase.co/rest/v1/maintenance_records?select=*&limit=1', {
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0c2JhdWxscXh3cXF5ZHh2eWF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NDIwOTYsImV4cCI6MjA2NzExODA5Nn0.X05idaRCsN3_DNoeTdbfsLNHhrZPGamPOqJWpIfvxlA',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0c2JhdWxscXh3cXF5ZHh2eWF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NDIwOTYsImV4cCI6MjA2NzExODA5Nn0.X05idaRCsN3_DNoeTdbfsLNHhrZPGamPOqJWpIfvxlA'
             }
-        }
+        });
+
+        const data = await response.json();
+        alert(`✅ Connection successful! Found ${data.length} records in database.`);
+        updateStatusBar('✅ Connection test successful', 'success');
+
+    } catch (error) {
+        console.error('Connection test failed:', error);
+        alert(`❌ Connection failed: ${error.message}`);
+        updateStatusBar('❌ Connection test failed', 'error');
+    }
+}
 
         function exportBasicReport() {
             const csvData = [
