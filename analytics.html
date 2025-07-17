@@ -390,7 +390,7 @@
             <div class="logo">
                 <img src="logo.png" alt="Capwell Industries Logo">
             </div>
-            <h1>CAPWELL INDUSTRIES</h1>
+            <h1>CAPWELL INDUSTRIES LTD</h1>
             <p>Maintenance Analytics Dashboard</p>
         </div>
 
@@ -449,6 +449,7 @@
                 </div>
                 <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
                 <button class="btn btn-export" onclick="exportData()">📊 Export CSV</button>
+                <button class="btn btn-primary" onclick="testConnection()">🔍 Test DB</button>
             </div>
 
             <!-- Machine Performance Analysis -->
@@ -793,6 +794,23 @@
                 return {};
             }
         }
+        async function testConnection() {
+    try {
+        console.log('Testing basic connection...');
+        const { data, error } = await supabase.from('maintenance_records').select('*').limit(5);
+        
+        if (error) {
+            console.error('Database error:', error);
+            alert('Database Error: ' + error.message);
+        } else {
+            console.log('Success! Found records:', data);
+            alert(`Success! Found ${data.length} records`);
+        }
+    } catch (error) {
+        console.error('Connection failed:', error);
+        alert('Connection Failed: ' + error.message);
+    }
+}
 
         function updateMetrics() {
             const records = analyticsData.records;
