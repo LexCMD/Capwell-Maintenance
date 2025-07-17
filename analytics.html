@@ -449,7 +449,7 @@
                 </div>
                 <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
                 <button class="btn btn-export" onclick="exportData()">📊 Export CSV</button>
-                <button class="btn btn-primary" onclick="testConnection()">🔍 Test DB</button>
+              
             </div>
 
             <!-- Machine Performance Analysis -->
@@ -533,101 +533,148 @@
     </div>
 
     <script>
-        // Embedded Supabase client for analytics
-        class SupabaseClient {
-            constructor(url, key) {
-                this.url = url;
-                this.key = key;
-                this.headers = {
-                    'Content-Type': 'application/json',
-                    'apikey': key,
-                    'Authorization': `Bearer ${key}`
-                };
-            }
+      // Embedded Supabase client - no external dependencies needed
+class SupabaseClient {
+    constructor(url, key) {
+        this.url = url;
+        this.key = key;
+        this.headers = {
+            'Content-Type': 'application/json',
+            'apikey': key,
+            'Authorization': `Bearer ${key}`
+        };
+    }
 
-            from(table) {
-                return new SupabaseTable(this.url, this.headers, table);
-            }
+    from(table) {
+        return new SupabaseTable(this.url, this.headers, table);
+    }
+}
 
-            rpc(functionName, params = {}) {
-                return new SupabaseRPC(this.url, this.headers, functionName, params);
-            }
+class SupabaseTable {
+    constructor(url, headers, table) {
+        this.url = url;
+        this.headers = headers;
+        this.table = table;
+        this.selectFields = '*';
+        this.whereConditions = [];
+        this.limitValue = null;
+        this.orderByField = null;
+        this.isSingle = false;
+        this.isInsert = false;
+        this.insertData = null;
+    }
+
+    select(fields = '*') {
+        this.selectFields = fields;
+        return this;
+    }
+
+    eq(column, value) {
+        this.whereConditions.push(`${column}=eq.${value}`);
+        return this;
+    }
+
+    gte(column, value) {
+        this.whereConditions.push(`${column}=gte.${value}`);
+        return this;
+    }
+
+    lte(column, value) {
+        this.whereConditions.push(`${column}=lte.${value}`);
+        return this;
+    }
+
+    limit(count) {
+        this.limitValue = count;
+        return this;
+    }
+
+    order(field, options = {}) {
+        const direction = options.ascending === false ? '.desc' : '.asc';
+        this.orderByField = field + direction;
+        return this;
+    }
+
+    single() {
+        this.isSingle = true;
+        return this;
+    }
+
+    insert(records) {
+        this.isInsert = true;
+        this.insertData = records;
+        return this;
+    }
+
+    async execute() {
+        if (this.isInsert) {
+            return await this.performInsert();
+        } else {
+            return await this.performSelect();
+        }
+    }
+
+    async performSelect() {
+        let url = `${this.url}/rest/v1/${this.table}`;
+        
+        const params = [];
+        if (this.selectFields !== '*') params.push(`select=${this.selectFields}`);
+        if (this.whereConditions.length > 0) params.push(...this.whereConditions);
+        if (this.limitValue) params.push(`limit=${this.limitValue}`);
+        if (this.orderByField) params.push(`order=${this.orderByField}`);
+        
+        if (params.length > 0) url += '?' + params.join('&');
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: this.headers
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
         }
 
-        class SupabaseTable {
-            constructor(url, headers, table) {
-                this.url = url;
-                this.headers = headers;
-                this.table = table;
-                this.selectFields = '*';
-                this.whereConditions = [];
-                this.limitValue = null;
-                this.orderByField = null;
-            }
-
-            select(fields = '*') {
-                this.selectFields = fields;
-                return this;
-            }
-
-            eq(column, value) {
-                this.whereConditions.push(`${column}=eq.${value}`);
-                return this;
-            }
-
-            gte(column, value) {
-                this.whereConditions.push(`${column}=gte.${value}`);
-                return this;
-            }
-
-            lte(column, value) {
-                this.whereConditions.push(`${column}=lte.${value}`);
-                return this;
-            }
-
-            limit(count) {
-                this.limitValue = count;
-                return this;
-            }
-
-            order(field, options = {}) {
-                const direction = options.ascending === false ? '.desc' : '.asc';
-                this.orderByField = field + direction;
-                return this;
-            }
-
-            async execute() {
-                let url = `${this.url}/rest/v1/${this.table}`;
-                
-                const params = [];
-                if (this.selectFields !== '*') params.push(`select=${this.selectFields}`);
-                if (this.whereConditions.length > 0) params.push(...this.whereConditions);
-                if (this.limitValue) params.push(`limit=${this.limitValue}`);
-                if (this.orderByField) params.push(`order=${this.orderByField}`);
-                
-                if (params.length > 0) url += '?' + params.join('&');
-
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: this.headers
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                return { data, error: null };
-            }
-
-            then(callback) {
-                return this.execute().then(callback);
-            }
-
-            catch(callback) {
-                return this.execute().catch(callback);
-            }
+        let data = await response.json();
+        if (this.isSingle && data && data.length > 0) {
+            data = data[0];
         }
+        return { data, error: null };
+    }
+
+    async performInsert() {
+        let url = `${this.url}/rest/v1/${this.table}`;
+        
+        if (this.selectFields !== '*') {
+            url += `?select=${this.selectFields}`;
+        }
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { ...this.headers, 'Prefer': 'return=representation' },
+            body: JSON.stringify(this.insertData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        let data = await response.json();
+        if (this.isSingle && data && data.length > 0) {
+            data = data[0];
+        }
+        return { data, error: null };
+    }
+
+    then(callback) {
+        return this.execute().then(callback);
+    }
+
+    catch(callback) {
+        return this.execute().catch(callback);
+    }
+}
 
         // Global variables
         let supabase = null;
@@ -794,23 +841,6 @@
                 return {};
             }
         }
-        async function testConnection() {
-    try {
-        console.log('Testing basic connection...');
-        const { data, error } = await supabase.from('maintenance_records').select('*').limit(5);
-        
-        if (error) {
-            console.error('Database error:', error);
-            alert('Database Error: ' + error.message);
-        } else {
-            console.log('Success! Found records:', data);
-            alert(`Success! Found ${data.length} records`);
-        }
-    } catch (error) {
-        console.error('Connection failed:', error);
-        alert('Connection Failed: ' + error.message);
-    }
-}
 
         function updateMetrics() {
             const records = analyticsData.records;
