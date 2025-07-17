@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capwell Industries - Maintenance Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .logo {
+            width: auto;
+            height: 80px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .logo img {
+            height: 80px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .refresh-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .status-bar {
+            background: #e8f5e8;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+            text-align: center;
+        }
+
+        .metric-card.critical {
+            border-left-color: #e74c3c;
+        }
+
+        .metric-card.warning {
+            border-left-color: #f39c12;
+        }
+
+        .metric-card.success {
+            border-left-color: #27ae60;
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            font-size: 1.1em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .analytics-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .analytics-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-icon {
+            background: #3498db;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1em;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .data-table th {
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .reliability-bar {
+            background: #ecf0f1;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .reliability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e74c3c 0%, #f39c12 50%, #27ae60 100%);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .breakdown-type-chart {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .breakdown-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        .breakdown-item.mechanical { border-left-color: #e74c3c; }
+        .breakdown-item.electrical { border-left-color: #f39c12; }
+        .breakdown-item.operational { border-left-color: #9b59b6; }
+        .breakdown-item.others { border-left-color: #95a5a6; }
+
+        .breakdown-count {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .breakdown-label {
+            color: #666;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9em;
+        }
+
+        .filter-group select, .filter-group input {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-export {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .export-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .status-pending { color: #f39c12; font-weight: bold; }
+        .status-completed { color: #27ae60; font-weight: bold; }
+        .status-in_progress { color: #3498db; font-weight: bold; }
+        .status-reported { color: #e74c3c; font-weight: bold; }
+
+        @media (max-width: 768px) {
+            .back-btn, .refresh-btn {
+                position: static;
+                margin: 10px;
+                display: inline-block;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .data-table {
+                font-size: 0.9em;
+            }
+            
+            .breakdown-type-chart {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">← Back to Form</a>
+            <button class="refresh-btn" onclick="loadAllAnalytics()">🔄 Refresh Data</button>
+            <div class="logo">
+                <img src="logo.png" alt="Capwell Industries Logo">
+            </div>
+            <h1>CAPWELL INDUSTRIES</h1>
+            <p>Maintenance Analytics Dashboard</p>
+        </div>
+
+        <div class="main-content">
+            <div class="status-bar" id="statusBar">
+                🔄 Loading analytics data...
+            </div>
+
+            <!-- Key Metrics Overview -->
+            <div class="metrics-grid" id="metricsGrid">
+                <div class="metric-card">
+                    <div class="metric-value" id="totalRecords">-</div>
+                    <div class="metric-label">Total Records</div>
+                </div>
+                <div class="metric-card warning">
+                    <div class="metric-value" id="avgRepairTime">-</div>
+                    <div class="metric-label">Avg Repair Time (hrs)</div>
+                </div>
+                <div class="metric-card critical">
+                    <div class="metric-value" id="totalDowntime">-</div>
+                    <div class="metric-label">Total Downtime (hrs)</div>
+                </div>
+                <div class="metric-card success">
+                    <div class="metric-value" id="completedRepairs">-</div>
+                    <div class="metric-label">Completed Repairs</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Date Range</label>
+                    <select id="dateFilter">
+                        <option value="7">Last 7 days</option>
+                        <option value="30" selected>Last 30 days</option>
+                        <option value="90">Last 90 days</option>
+                        <option value="365">Last year</option>
+                        <option value="all">All time</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Machine Type</label>
+                    <select id="machineFilter">
+                        <option value="all">All Machines</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Breakdown Type</label>
+                    <select id="breakdownFilter">
+                        <option value="all">All Types</option>
+                        <option value="mechanical">Mechanical</option>
+                        <option value="electrical">Electrical</option>
+                        <option value="operational">Operational</option>
+                        <option value="others">Others</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+                <button class="btn btn-export" onclick="exportData()">📊 Export CSV</button>
+            </div>
+
+            <!-- Machine Performance Analysis -->
+            <div class="analytics-section">
+                <h3><span class="section-icon">🏭</span>Machine Performance Analysis</h3>
+                <div class="chart-container">
+                    <table class="data-table" id="machineAnalyticsTable">
+                        <thead>
+                            <tr>
+                                <th>Machine Name</th>
+                                <th>Total Repairs</th>
+                                <th>Avg Repair Time</th>
+                                <th>Total Downtime</th>
+                                <th>Reliability</th>
+                                <th>Last Repair</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="loading">Loading machine data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Breakdown Type Analysis -->
+            <div class="analytics-section">
+                <h3><span class="section-icon">🔍</span>Breakdown Type Distribution</h3>
+                <div class="breakdown-type-chart" id="breakdownChart">
+                    <div class="breakdown-item mechanical">
+                        <div class="breakdown-count" id="mechanicalCount">-</div>
+                        <div class="breakdown-label">Mechanical</div>
+                    </div>
+                    <div class="breakdown-item electrical">
+                        <div class="breakdown-count" id="electricalCount">-</div>
+                        <div class="breakdown-label">Electrical</div>
+                    </div>
+                    <div class="breakdown-item operational">
+                        <div class="breakdown-count" id="operationalCount">-</div>
+                        <div class="breakdown-label">Operational</div>
+                    </div>
+                    <div class="breakdown-item others">
+                        <div class="breakdown-count" id="othersCount">-</div>
+                        <div class="breakdown-label">Others</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Maintenance Records -->
+            <div class="analytics-section">
+                <h3><span class="section-icon">📋</span>Recent Maintenance Records</h3>
+                <div class="chart-container">
+                    <table class="data-table" id="recentRecordsTable">
+                        <thead>
+                            <tr>
+                                <th>Form Number</th>
+                                <th>Date</th>
+                                <th>Machine</th>
+                                <th>Problem</th>
+                                <th>Status</th>
+                                <th>Operator</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="loading">Loading recent records...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Export Options -->
+            <div class="export-options">
+                <button class="btn btn-export" onclick="exportDetailedReport()">📊 Detailed Report</button>
+                <button class="btn btn-export" onclick="exportMachineReport()">🏭 Machine Report</button>
+                <button class="btn btn-export" onclick="exportTimelineReport()">⏰ Timeline Report</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Embedded Supabase client for analytics
+        class SupabaseClient {
+            constructor(url, key) {
+                this.url = url;
+                this.key = key;
+                this.headers = {
+                    'Content-Type': 'application/json',
+                    'apikey': key,
+                    'Authorization': `Bearer ${key}`
+                };
+            }
+
+            from(table) {
+                return new SupabaseTable(this.url, this.headers, table);
+            }
+
+            rpc(functionName, params = {}) {
+                return new SupabaseRPC(this.url, this.headers, functionName, params);
+            }
+        }
+
+        class SupabaseTable {
+            constructor(url, headers, table) {
+                this.url = url;
+                this.headers = headers;
+                this.table = table;
+                this.selectFields = '*';
+                this.whereConditions = [];
+                this.limitValue = null;
+                this.orderByField = null;
+            }
+
+            select(fields = '*') {
+                this.selectFields = fields;
+                return this;
+            }
+
+            eq(column, value) {
+                this.whereConditions.push(`${column}=eq.${value}`);
+                return this;
+            }
+
+            gte(column, value) {
+                this.whereConditions.push(`${column}=gte.${value}`);
+                return this;
+            }
+
+            lte(column, value) {
+                this.whereConditions.push(`${column}=lte.${value}`);
+                return this;
+            }
+
+            limit(count) {
+                this.limitValue = count;
+                return this;
+            }
+
+            order(field, options = {}) {
+                const direction = options.ascending === false ? '.desc' : '.asc';
+                this.orderByField = field + direction;
+                return this;
+            }
+
+            async execute() {
+                let url = `${this.url}/rest/v1/${this.table}`;
+                
+                const params = [];
+                if (this.selectFields !== '*') params.push(`select=${this.selectFields}`);
+                if (this.whereConditions.length > 0) params.push(...this.whereConditions);
+                if (this.limitValue) params.push(`limit=${this.limitValue}`);
+                if (this.orderByField) params.push(`order=${this.orderByField}`);
+                
+                if (params.length > 0) url += '?' + params.join('&');
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: this.headers
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return { data, error: null };
+            }
+
+            then(callback) {
+                return this.execute().then(callback);
+            }
+
+            catch(callback) {
+                return this.execute().catch(callback);
+            }
+        }
+
+        // Global variables
+        let supabase = null;
+        let analyticsData = {
+            machines: [],
+            records: [],
+            breakdownTypes: {},
+            metrics: {}
+        };
+
+        // Initialize analytics dashboard
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializeSupabase();
+            await loadAllAnalytics();
+            setupFilters();
+        });
+
+        async function initializeSupabase() {
+            try {
+                const SUPABASE_URL = 'https://utsbaullqxwqqydxvyav.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0c2JhdWxscXh3cXF5ZHh2eWF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NDIwOTYsImV4cCI6MjA2NzExODA5Nn0.X05idaRCsN3_DNoeTdbfsLNHhrZPGamPOqJWpIfvxlA';
+                
+                supabase = new SupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                // Test connection
+                const { data, error } = await supabase.from('maintenance_records').select('count').limit(1);
+                if (error) throw error;
+                
+                updateStatusBar('✅ Connected to database - Analytics ready', 'success');
+                
+            } catch (error) {
+                console.error('Analytics connection failed:', error);
+                updateStatusBar('❌ Database connection failed - Analytics unavailable', 'error');
+            }
+        }
+
+        async function loadAllAnalytics() {
+            try {
+                updateStatusBar('🔄 Loading analytics data...', 'loading');
+                
+                // Load all data in parallel
+                const [machines, records, breakdownData] = await Promise.all([
+                    loadMachineAnalytics(),
+                    loadMaintenanceRecords(),
+                    loadBreakdownAnalytics()
+                ]);
+                
+                // Update displays
+                updateMetrics();
+                updateMachineTable();
+                updateBreakdownChart();
+                updateRecentRecords();
+                
+                updateStatusBar('✅ Analytics loaded successfully', 'success');
+                
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                updateStatusBar('❌ Error loading analytics data', 'error');
+            }
+        }
+
+        async function loadMachineAnalytics() {
+            try {
+                // Get maintenance records with machine names
+                const { data: records, error } = await supabase
+                    .from('maintenance_records')
+                    .select(`
+                        *,
+                        machines(machine_name),
+                        repair_timeline(total_repair_hours, production_downtime_hours)
+                    `);
+
+                if (error) throw error;
+
+                // Process machine statistics
+                const machineStats = {};
+                
+                records.forEach(record => {
+                    const machineName = record.machines?.machine_name || 'Unknown Machine';
+                    
+                    if (!machineStats[machineName]) {
+                        machineStats[machineName] = {
+                            name: machineName,
+                            totalRepairs: 0,
+                            totalRepairHours: 0,
+                            totalDowntime: 0,
+                            lastRepair: null
+                        };
+                    }
+                    
+                    const stats = machineStats[machineName];
+                    stats.totalRepairs++;
+                    
+                    if (record.repair_timeline && record.repair_timeline.length > 0) {
+                        const timeline = record.repair_timeline[0];
+                        stats.totalRepairHours += timeline.total_repair_hours || 0;
+                        stats.totalDowntime += timeline.production_downtime_hours || 0;
+                    }
+                    
+                    if (!stats.lastRepair || new Date(record.incident_date) > new Date(stats.lastRepair)) {
+                        stats.lastRepair = record.incident_date;
+                    }
+                });
+
+                analyticsData.machines = Object.values(machineStats);
+                return analyticsData.machines;
+                
+            } catch (error) {
+                console.error('Error loading machine analytics:', error);
+                return [];
+            }
+        }
+
+        async function loadMaintenanceRecords() {
+            try {
+                const { data: records, error } = await supabase
+                    .from('maintenance_records')
+                    .select(`
+                        *,
+                        machines(machine_name)
+                    `)
+                    .order('incident_date', { ascending: false })
+                    .limit(50);
+
+                if (error) throw error;
+
+                analyticsData.records = records || [];
+                return analyticsData.records;
+                
+            } catch (error) {
+                console.error('Error loading maintenance records:', error);
+                return [];
+            }
+        }
+
+        async function loadBreakdownAnalytics() {
+            try {
+                const { data: breakdownData, error } = await supabase
+                    .from('root_cause_analysis')
+                    .select('*');
+
+                if (error) throw error;
+
+                const breakdownTypes = {
+                    mechanical: 0,
+                    electrical: 0,
+                    operational: 0,
+                    others: 0
+                };
+
+                breakdownData.forEach(item => {
+                    if (item.is_mechanical) breakdownTypes.mechanical++;
+                    if (item.is_electrical) breakdownTypes.electrical++;
+                    if (item.is_operational) breakdownTypes.operational++;
+                    if (item.is_others) breakdownTypes.others++;
+                });
+
+                analyticsData.breakdownTypes = breakdownTypes;
+                return breakdownTypes;
+                
+            } catch (error) {
+                console.error('Error loading breakdown analytics:', error);
+                return {};
+            }
+        }
+
+        function updateMetrics() {
+            const records = analyticsData.records;
+            const machines = analyticsData.machines;
+            
+            document.getElementById('totalRecords').textContent = records.length;
+            
+            const avgRepairTime = machines.reduce((sum, m) => sum + (m.totalRepairHours / Math.max(m.totalRepairs, 1)), 0) / Math.max(machines.length, 1);
+            document.getElementById('avgRepairTime').textContent = avgRepairTime.toFixed(1);
+            
+            const totalDowntime = machines.reduce((sum, m) => sum + m.totalDowntime, 0);
+            document.getElementById('totalDowntime').textContent = totalDowntime.toFixed(1);
+            
+            const completedRepairs = records.filter(r => r.status === 'completed').length;
+            document.getElementById('completedRepairs').textContent = completedRepairs;
+        }
+
+        function updateMachineTable() {
+            const tbody = document.querySelector('#machineAnalyticsTable tbody');
+            const machines = analyticsData.machines.sort((a, b) => b.totalRepairs - a.totalRepairs);
+            
+            tbody.innerHTML = machines.map(machine => {
+                const avgRepairTime = (machine.totalRepairHours / Math.max(machine.totalRepairs, 1)).toFixed(1);
+                const reliability = Math.max(0, 100 - (machine.totalRepairs * 2)).toFixed(1);
+                const lastRepair = machine.lastRepair ? new Date(machine.lastRepair).toLocaleDateString() : 'N/A';
+                
+                return `
+                    <tr>
+                        <td><strong>${machine.name}</strong></td>
+                        <td>${machine.totalRepairs}</td>
+                        <td>${avgRepairTime}h</td>
+                        <td>${machine.totalDowntime.toFixed(1)}h</td>
+                        <td>
+                            <div class="reliability-bar">
+                                <div class="reliability-fill" style="width: ${reliability}%"></div>
+                            </div>
+                            ${reliability}%
+                        </td>
+                        <td>${lastRepair}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateBreakdownChart() {
+            const types = analyticsData.breakdownTypes;
+            document.getElementById('mechanicalCount').textContent = types.mechanical || 0;
+            document.getElementById('electricalCount').textContent = types.electrical || 0;
+            document.getElementById('operationalCount').textContent = types.operational || 0;
+            document.getElementById('othersCount').textContent = types.others || 0;
+        }
+
+        function updateRecentRecords() {
+            const tbody = document.querySelector('#recentRecordsTable tbody');
+            const recentRecords = analyticsData.records.slice(0, 10);
+            
+            tbody.innerHTML = recentRecords.map(record => {
+                const machineName = record.machines?.machine_name || 'Unknown';
+                const date = new Date(record.incident_date).toLocaleDateString();
+                const problem = record.problem_description.substring(0, 50) + '...';
+                const status = record.status || 'pending';
+                
+                return `
+                    <tr>
+                        <td><strong>${record.form_number}</strong></td>
+                        <td>${date}</td>
+                        <td>${machineName}</td>
+                        <td title="${record.problem_description}">${problem}</td>
+                        <td><span class="status-${status}">${status}</span></td>
+                        <td>${record.operator_name}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function setupFilters() {
+            // Populate machine filter
+            const machineFilter = document.getElementById('machineFilter');
+            const uniqueMachines = [...new Set(analyticsData.machines.map(m => m.name))];
+            
+            uniqueMachines.forEach(machine => {
+                const option = document.createElement('option');
+                option.value = machine;
+                option.textContent = machine;
+                machineFilter.appendChild(option);
+            });
+        }
+
+        function applyFilters() {
+            // This would filter the displayed data based on selected filters
+            // Implementation depends on your specific filtering requirements
+            loadAllAnalytics();
+        }
+
+        function exportData() {
+            const csvData = generateCSV(analyticsData.records);
+            downloadCSV(csvData, 'maintenance_analytics.csv');
+        }
+
+        function exportDetailedReport() {
+            const detailedData = analyticsData.records.map(record => ({
+                'Form Number': record.form_number,
+                'Date': record.incident_date,
+                'Machine': record.machines?.machine_name || 'Unknown',
+                'Problem': record.problem_description,
+                'Operator': record.operator_name,
